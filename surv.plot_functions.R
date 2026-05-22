@@ -22,7 +22,7 @@ surv.plot <- function(
   
   # ── 0. Load packages ──────────────────────────────────────────────────────
   for (pkg in c("survminer", "tidyverse", "ggplot2", "survival", "gridExtra", "patchwork", "grid")) {
-    if (!paste0("package:", pkg) %in% search()) {
+    if (!base::paste0("package:", pkg) %in% search()) {
       library(pkg, character.only = TRUE)
     }
   }
@@ -30,16 +30,16 @@ surv.plot <- function(
   # ── 1. Build survfit / model ───────────────────────────────────────────────
   base_survfit_args <- list(formula = surv.formula, data = dat)
   if (!is.null(weights)) base_survfit_args$weights <- weights
-  svf <- do.call(survfit, c(base_survfit_args, survfit.args))
+  svf <- do.call(survival::survfit, c(base_survfit_args, survfit.args))
   
   base_model_args <- list(formula = surv.formula, data = dat)
   if (!is.null(weights)) base_model_args$weights <- weights
   
   if (!aft.model) {
-    cox.model <- do.call(coxph,   c(base_model_args, model.args))
+    cox.model <- do.call(survival::coxph, c(base_model_args, model.args))
     aft.mod   <- NULL
   } else {
-    aft.mod   <- do.call(survreg, c(base_model_args, list(dist = "weibull"), model.args))
+    aft.mod   <- do.call(survival::survreg, c(base_model_args, list(dist = "weibull"), model.args))
     cox.model <- NULL
   }
   
@@ -52,22 +52,22 @@ surv.plot <- function(
     ggsurvplot.args
   )
   
-  psurv <- do.call(ggsurvplot, ggsurvplot_args)
+  psurv <- do.call(survminer::ggsurvplot, ggsurvplot_args)
   
   # ── 3. Customise the KM plot panel ────────────────────────────────────────
   psurv$plot <- psurv$plot +
-    annotate("segment",
+    ggplot2::annotate("segment",
              x = 0, xend = 45, y = 50, yend = 50,
              linetype = "dashed", color = "black", linewidth = 0.2) +
-    theme(
-      legend.title   = element_text(face = "bold"),
-      axis.line      = element_line(linewidth = 0.2),
-      axis.title     = element_text(face = "bold"),
-      axis.title.x   = element_text(face = "bold", margin = margin(t = 10)),
-      axis.title.y   = element_text(face = "bold", margin = margin(r = 10)),
-      plot.margin    = margin(6, 6, 6, 27)
+    ggplot2::theme(
+      legend.title   = ggplot2::element_text(face = "bold"),
+      axis.line      = ggplot2::element_line(linewidth = 0.2),
+      axis.title     = ggplot2::element_text(face = "bold"),
+      axis.title.x   = ggplot2::element_text(face = "bold", margin = ggplot2::margin(t = 10)),
+      axis.title.y   = ggplot2::element_text(face = "bold", margin = ggplot2::margin(r = 10)),
+      plot.margin    = ggplot2::margin(6, 6, 6, 27)
     ) +
-    guides(color = guide_legend(override.aes = list(linewidth = 0.8)))
+    ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(linewidth = 0.8)))
   
   # ── 4. Customise the risk table panel ─────────────────────────────────────
   if (!is.null(psurv$table)) {
@@ -76,14 +76,14 @@ surv.plot <- function(
       font.title     = c(10, "bold"),
       font.ytickslab = c(10)
     )
-    psurv$table$theme$plot.title$margin <- margin(0, 0, 6, -40)
+    psurv$table$theme$plot.title$margin <- ggplot2::margin(0, 0, 6, -40)
     psurv$table$theme$text$hjust        <- 0
   }
   
   # ── 5. Optional: unadjusted risk table ────────────────────────────────────
   if (labels.table.unadj) {
     
-    svf_unadj <- do.call(survfit, list(formula = surv.formula, data = dat))
+    svf_unadj <- do.call(survival::survfit, list(formula = surv.formula, data = dat))
     
     if ("risk.table" %in% names(ggsurvplot.args)) {
       ggsurvplot.args$risk.table <- NULL
@@ -102,14 +102,14 @@ surv.plot <- function(
            palette              = palette),
       ggsurvplot.args
     )
-    psurv_unadj <- do.call(ggsurvplot, ggsurvplot_unadj_args)
+    psurv_unadj <- do.call(survminer::ggsurvplot, ggsurvplot_unadj_args)
     
     psurv_unadj$table <- customize_labels(
       psurv_unadj$table,
       font.title     = c(10, "bold"),
       font.ytickslab = c(10)
     )
-    psurv_unadj$table$theme$plot.title$margin <- margin(0, 0, 6, -40)
+    psurv_unadj$table$theme$plot.title$margin <- ggplot2::margin(0, 0, 6, -40)
     psurv_unadj$table$theme$text$hjust        <- 0
     
     active_table <- psurv_unadj$table
@@ -274,7 +274,7 @@ ggsurvhrplot <- function(cox_model    = NULL,
     
     med_txt <- mapply(
       function(m, lo, hi)
-        paste0(fmt_med(m), " (", fmt_med(lo), " - ", fmt_med(hi), ")"),
+        base::paste0(fmt_med(m), " (", fmt_med(lo), " - ", fmt_med(hi), ")"),
       med_vals, med_lo, med_hi
     )
   }
@@ -282,7 +282,7 @@ ggsurvhrplot <- function(cox_model    = NULL,
   # =====================================================
   # Build table data frame
   # =====================================================
-  hr_col <- c("Ref.", paste0(hr, " (", ci_low, " - ", ci_high, ")"))
+  hr_col <- c("Ref.", base::paste0(hr, " (", ci_low, " - ", ci_high, ")"))
   
   if (p.value && median.show) {
     table_df <- data.frame(
@@ -310,10 +310,10 @@ ggsurvhrplot <- function(cox_model    = NULL,
     )
   }
   
-  tbl <- tableGrob(
+  tbl <- gridExtra::tableGrob(
     table_df,
     rows  = labels,
-    theme = ttheme_minimal(
+    theme = gridExtra::ttheme_minimal(
       core    = list(fg_params = list(cex = 0.7)),
       colhead = list(fg_params = list(fontface = "bold",  cex = 0.8)),
       rowhead = list(fg_params = list(fontface = "plain", cex = 0.75))
@@ -355,7 +355,7 @@ ggsurvhrplot <- function(cox_model    = NULL,
   #   positive y_margin → shift table UP
   #   negative y_margin → shift table DOWN
   # =====================================================
-  built   <- ggplot_build(ggsurvplot$plot)
+  built   <- ggplot2::ggplot_build(ggsurvplot$plot)
   x_range <- built$layout$panel_params[[1]]$x.range
   y_range <- built$layout$panel_params[[1]]$y.range
   
@@ -392,14 +392,14 @@ ggsurvhrplot <- function(cox_model    = NULL,
   # Inject table and combine with risk table
   # =====================================================
   final_plot <- ggsurvplot$plot +
-    annotation_custom(
+    ggplot2::annotation_custom(
       grob = tbl,
       xmin = xmin, xmax = xmax,
       ymin = ymin, ymax = ymax
     )
   
   bottom <- if (!is.null(ggsurvtable)) ggsurvtable else ggsurvplot$table
-  if (!is.null(bottom)) final_plot / bottom + plot_layout(heights = c(5, 1)) else final_plot + plot_layout(heights = c(6))
+  if (!is.null(bottom)) final_plot / bottom + patchwork::plot_layout(heights = c(5, 1)) else final_plot + patchwork::plot_layout(heights = c(6))
 }
 
 
@@ -411,7 +411,7 @@ customize_labels <- function (p, font.title = NULL,
                               font.x = NULL, font.y = NULL, font.xtickslab = NULL,
                               font.ytickslab = NULL){
   original.p <- p
-  if(is_ggplot(original.p)) list.plots <- list(original.p)
+  if(ggplot2::is_ggplot(original.p)) list.plots <- list(original.p)
   else if(is.list(original.p)) list.plots <- original.p
   else stop("Can't handle an object of class ", class (original.p))
   .set_font <- function(font){
@@ -420,17 +420,17 @@ customize_labels <- function (p, font.title = NULL,
   }
   for(i in 1:length(list.plots)){
     p <- list.plots[[i]]
-    if(is_ggplot(p)){
-      if (!is.null(font.title)) p <- p + theme(plot.title = .set_font(font.title))
-      if (!is.null(font.subtitle)) p <- p + theme(plot.subtitle = .set_font(font.subtitle))
-      if (!is.null(font.caption)) p <- p + theme(plot.caption = .set_font(font.caption))
-      if (!is.null(font.x)) p <- p + theme(axis.title.x = .set_font(font.x))
-      if (!is.null(font.y)) p <- p + theme(axis.title.y = .set_font(font.y))
-      if (!is.null(font.xtickslab)) p <- p + theme(axis.text.x = .set_font(font.xtickslab))
-      if (!is.null(font.ytickslab)) p <- p + theme(axis.text.y = .set_font(font.ytickslab))
+    if(ggplot2::is_ggplot(p)){
+      if (!is.null(font.title)) p <- p + ggplot2::theme(plot.title = .set_font(font.title))
+      if (!is.null(font.subtitle)) p <- p + ggplot2::theme(plot.subtitle = .set_font(font.subtitle))
+      if (!is.null(font.caption)) p <- p + ggplot2::theme(plot.caption = .set_font(font.caption))
+      if (!is.null(font.x)) p <- p + ggplot2::theme(axis.title.x = .set_font(font.x))
+      if (!is.null(font.y)) p <- p + ggplot2::theme(axis.title.y = .set_font(font.y))
+      if (!is.null(font.xtickslab)) p <- p + ggplot2::theme(axis.text.x = .set_font(font.xtickslab))
+      if (!is.null(font.ytickslab)) p <- p + ggplot2::theme(axis.text.y = .set_font(font.ytickslab))
       list.plots[[i]] <- p
     }
   }
-  if(is_ggplot(original.p)) list.plots[[1]]
+  if(ggplot2::is_ggplot(original.p)) list.plots[[1]]
   else list.plots
 }
