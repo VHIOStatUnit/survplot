@@ -16,7 +16,7 @@ This repository provides three R functions that extend the standard `ggsurvplot(
 
 The typical output is a composite figure with:
 
-- A Kaplan–Meier curve with optional confidence bands and a 50 % reference line
+- A Kaplan–Meier curve with optional confidence bands and median survival reference line
 - An inset table showing HR (95 % CI), p-value, and/or median survival per group
 - A risk table (number at risk / cumulative events) below the curve
 
@@ -86,8 +86,7 @@ surv.plot(
 
   tableplot.args = list(
     median.show = TRUE,
-    position    = "topright",
-    table_width = 0.52
+    position    = "topright"
   )
 )
 ```
@@ -176,7 +175,7 @@ ggsurvhrplot(
 
 #### Arguments
 
-**Statistics source** — exactly one of the first three must be supplied:
+**Statistics source** — exactly one of the first three must be supplied, automatically done by calling `surv.plot` according to the specification of `aft.model` or `table.df`:
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
@@ -344,8 +343,9 @@ ggsave("km_plot.png", plot = p, width = 10, height = 8, dpi = 300)
 
 ```
 .
-├── surv_plot_functions.R   # All functions (surv.plot, ggsurvhrplot, helpers)
-├── test_surv_plot_full.R   # 27 tests covering every argument and code path
+├── surv.plot_functions.R   # All functions (surv.plot, ggsurvhrplot, helpers)
+├── create_df.table.R       # An example how to create the HR table for interactions
+├── test_surv.plot_full.R   # 27 tests covering every argument and code path
 └── README.md
 ```
 
