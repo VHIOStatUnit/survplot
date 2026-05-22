@@ -1,7 +1,7 @@
 # ggsurvplot-extended
 
 > Publication-ready Kaplan–Meier survival plots with embedded statistic tables — built on `{survival}`, `{survminer}`, and `{patchwork}`.
-
+> 
 ---
 
 ## Overview
